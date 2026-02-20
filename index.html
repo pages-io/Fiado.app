@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Libreta de Fiados</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        appleBlue: '#0071E3',
+                        appleBlueHover: '#005bb5',
+                        appleGray: '#F5F5F7',
+                        appleDark: '#1D1D1F',
+                        appleLightText: '#86868B',
+                        appleRed: '#FF3B30',
+                        appleGreen: '#34C759'
+                    },
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif']
+                    },
+                    boxShadow: {
+                        'apple': '0 4px 24px rgba(0,0,0,0.06)',
+                        'apple-lg': '0 10px 40px rgba(0,0,0,0.08)'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Animaciones y estilos premium */
+        body {
+            background-color: #F5F5F7;
+            color: #1D1D1F;
+            -webkit-font-smoothing: antialiased;
+            overscroll-behavior-y: none;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+
+        .input-apple {
+            width: 100%;
+            padding: 1rem 1.2rem;
+            border-radius: 12px;
+            background-color: #ffffff;
+            border: 1px solid transparent;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+        }
+
+        .input-apple:focus {
+            outline: none;
+            border-color: #0071E3;
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.1);
+        }
+
+        .btn-apple {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-radius: 999px; /* Pill shape */
+            font-weight: 600;
+            font-size: 1.05rem;
+            transition: all 0.2s ease;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .btn-primary {
+            background-color: #0071E3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #005bb5;
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background-color: rgba(0,0,0,0.05);
+            color: #1D1D1F;
+        }
+
+        .btn-secondary:hover {
+            background-color: rgba(0,0,0,0.08);
+        }
+
+        /* Modal Animations */
+        .modal-enter {
+            animation: modalFadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        
+        .modal-content-enter {
+            animation: modalScaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .modal-exit {
+            animation: modalFadeOut 0.2s ease-in forwards;
+        }
+        
+        .modal-content-exit {
+            animation: modalScaleDown 0.2s ease-in forwards;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes modalScaleUp {
+            from { opacity: 0; transform: scale(0.95) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+        @keyframes modalFadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+        @keyframes modalScaleDown {
+            from { opacity: 1; transform: scale(1) translateY(0); }
+            to { opacity: 0; transform: scale(0.95) translateY(10px); }
+        }
+
+        /* Toast Animations */
+        .toast-enter {
+            animation: toastSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+        .toast-exit {
+            animation: toastSlideDown 0.3s ease-in forwards;
+        }
+
+        @keyframes toastSlideUp {
+            from { opacity: 0; transform: translateY(100%) translateX(-50%); }
+            to { opacity: 1; transform: translateY(0) translateX(-50%); }
+        }
+        @keyframes toastSlideDown {
+            from { opacity: 1; transform: translateY(0) translateX(-50%); }
+            to { opacity: 0; transform: translateY(100%) translateX(-50%); }
+        }
+
+        /* Hide number input spinners */
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        input[type="number"] {
+            -moz-appearance: textfield;
+        }
+    </style>
+</head>
+<body class="min-h-screen relative overflow-x-hidden flex flex-col items-center">
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div id="app-container" class="w-full max-w-md mx-auto min-h-screen flex flex-col relative px-6 py-10 transition-opacity duration-300">
+        
+        <!-- PANTALLA DE INICIO (LISTA DE CLIENTES) -->
+        <div id="view-home" class="flex flex-col flex-grow">
+            <header class="flex justify-between items-center mb-8">
+                <div>
+                    <h1 class="text-3xl font-bold tracking-tight text-appleDark">Clientes</h1>
+                    <p class="text-sm text-appleLightText mt-1">Selecciona para ver cuenta</p>
+                </div>
+                <div class="flex gap-2">
+                    <button onclick="openModal('modal-admin-auth')" class="w-12 h-12 rounded-full bg-black/5 text-appleDark flex items-center justify-center shadow-sm hover:bg-black/10 transition-transform transform active:scale-95" title="Panel Admin">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                    </button>
+                    <button onclick="openModal('modal-register')" class="w-12 h-12 rounded-full bg-appleBlue text-white flex items-center justify-center shadow-apple hover:bg-appleBlueHover transition-transform transform active:scale-95" title="Nuevo Cliente">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                    </button>
+                </div>
+            </header>
+
+            <div id="users-grid" class="flex flex-col gap-4 pb-10">
+                <!-- Tarjetas dinámicas vía JS -->
+            </div>
+        </div>
+
+        <!-- PANTALLA DE PANEL DE USUARIO (DASHBOARD) -->
+        <div id="view-dashboard" class="hidden flex-col flex-grow">
+            <!-- Header -->
+            <header class="flex justify-between items-center mb-8">
+                <button onclick="goBackHome()" class="flex items-center text-appleBlue font-medium hover:opacity-70 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Volver
+                </button>
+                <div class="text-right">
+                    <p class="text-xs text-appleLightText font-medium uppercase tracking-wider">Mi Cartera</p>
+                    <h2 class="text-xl font-bold text-appleDark truncate w-32" id="dash-name">Usuario</h2>
+                </div>
+            </header>
+
+            <!-- Balance Card -->
+            <div class="glass rounded-3xl p-8 mb-8 text-center shadow-apple relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-appleBlue to-purple-500"></div>
+                <p class="text-appleLightText font-medium mb-2">Total a pagar</p>
+                <h3 class="text-5xl font-bold tracking-tight text-appleDark" id="dash-balance">$0.00</h3>
+                <div class="mt-6">
+                    <button onclick="openModal('modal-add-product')" class="btn-apple btn-primary shadow-apple-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+                        </svg>
+                        Agregar Fiado
+                    </button>
+                </div>
+            </div>
+
+            <!-- Movimientos -->
+            <div class="flex-grow">
+                <h4 class="text-lg font-bold text-appleDark mb-4">Movimientos recientes</h4>
+                <div id="transactions-list" class="space-y-3 pb-10">
+                    <!-- Dinámico vía JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- PANTALLA DE ADMIN -->
+        <div id="view-admin" class="hidden flex-col flex-grow">
+            <header class="flex justify-between items-center mb-6">
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight text-appleDark">Panel Admin</h1>
+                </div>
+                <button onclick="exitAdmin()" class="px-4 py-2 rounded-full bg-appleRed/10 text-appleRed text-sm font-bold hover:bg-appleRed/20 transition-colors">
+                    Salir
+                </button>
+            </header>
+
+            <!-- Tabs -->
+            <div class="flex p-1 bg-black/5 rounded-full mb-6 relative">
+                <button onclick="switchAdminTab('cobranza')" id="tab-cobranza" class="flex-1 py-2 text-sm font-semibold rounded-full bg-white shadow-sm text-appleDark transition-all">Cobranza</button>
+                <button onclick="switchAdminTab('productos')" id="tab-productos" class="flex-1 py-2 text-sm font-semibold rounded-full text-appleLightText transition-all">Productos</button>
+            </div>
+
+            <!-- Content -->
+            <div id="admin-content-cobranza" class="flex-col gap-4 pb-10 flex">
+                <!-- Clients list for Abonos -->
+            </div>
+            
+            <div id="admin-content-productos" class="flex-col gap-4 pb-10 hidden">
+                <button onclick="openProductModal()" class="w-full py-4 border-2 border-dashed border-appleBlue/30 text-appleBlue rounded-2xl font-semibold hover:bg-appleBlue/5 transition-colors mb-2">
+                    + Crear Nuevo Producto
+                </button>
+                <div id="admin-products-list" class="flex flex-col gap-3"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- OVERLAY DE MODALES -->
+    <div id="modal-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
+        
+        <!-- MODAL: REGISTRO -->
+        <div id="modal-register" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-appleDark">Nuevo Perfil</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="form-register" class="space-y-4" onsubmit="handleRegister(event)">
+                <div>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Nombre Completo</label>
+                    <input type="text" id="reg-name" class="input-apple py-3" placeholder="Ej. Juan Pérez" required>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Celular (Será tu ID)</label>
+                    <input type="tel" id="reg-phone" class="input-apple py-3" placeholder="10 dígitos" pattern="[0-9]{10}" required>
+                </div>
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">NIP (4 dígitos)</label>
+                        <input type="password" id="reg-pin" class="input-apple py-3 text-center tracking-widest" placeholder="••••" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Confirmar NIP</label>
+                        <input type="password" id="reg-pin-confirm" class="input-apple py-3 text-center tracking-widest" placeholder="••••" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                    </div>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="btn-apple btn-primary w-full">Crear Perfil</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- MODAL: AGREGAR PRODUCTO -->
+        <div id="modal-add-product" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-appleDark">Agregar Fiado</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            
+            <form id="form-add-product" class="space-y-5" onsubmit="handleConfirmPurchase(event)">
+                <div>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Selecciona el producto</label>
+                    <div class="relative">
+                        <select id="prod-select" class="input-apple appearance-none pr-10 bg-white" required onchange="updateProductPrice()">
+                            <option value="" disabled selected>Elige un producto...</option>
+                            <!-- Llenado vía JS -->
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-appleLightText">
+                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-black/5 rounded-2xl p-4 flex justify-between items-center">
+                    <span class="text-sm font-medium text-appleLightText">Precio:</span>
+                    <span class="text-2xl font-bold text-appleDark" id="prod-price-display">$0.00</span>
+                </div>
+
+                <div class="border-t border-black/10 pt-4">
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1 text-center">Ingresa tu NIP para autorizar</label>
+                    <input type="password" id="prod-pin" class="input-apple py-3 text-center text-2xl tracking-[0.5em] w-32 mx-auto block" placeholder="••••" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                </div>
+
+                <div class="pt-2">
+                    <button type="submit" class="btn-apple btn-primary w-full shadow-apple">Confirmar Cargo</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- MODAL: ADMIN AUTH -->
+        <div id="modal-admin-auth" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-appleDark">Acceso Admin</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="form-admin-auth" class="space-y-4" onsubmit="handleAdminAuth(event)">
+                <div>
+                    <input type="password" id="admin-pin" class="input-apple py-3 text-center text-2xl tracking-[0.5em] w-32 mx-auto block" placeholder="••••" maxlength="4" pattern="[0-9]{4}" inputmode="numeric" required>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="btn-apple btn-primary w-full">Entrar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- MODAL: ADMIN ABONO -->
+        <div id="modal-admin-abono" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-appleDark">Registrar Abono</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-appleLightText mb-4 text-center">Cliente: <span id="abono-client-name" class="font-bold text-appleDark"></span></p>
+            <form id="form-admin-abono" class="space-y-4" onsubmit="handleAdminAbono(event)">
+                <input type="hidden" id="abono-client-id">
+                <div>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Monto a descontar ($)</label>
+                    <input type="number" id="abono-amount" class="input-apple py-3 text-center text-2xl" placeholder="0.00" step="0.5" min="0.5" required>
+                </div>
+                <div class="pt-4">
+                    <button type="submit" class="btn-apple btn-primary w-full bg-appleGreen hover:bg-green-600">Aplicar Abono</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- MODAL: ADMIN PRODUCTO -->
+        <div id="modal-admin-product" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-appleDark" id="modal-product-title">Nuevo Producto</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="form-admin-product" class="space-y-4" onsubmit="handleSaveProduct(event)">
+                <input type="hidden" id="edit-prod-id">
+                <div class="flex gap-3">
+                    <div class="w-1/4">
+                        <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Icono</label>
+                        <input type="text" id="edit-prod-icon" class="input-apple py-3 text-center text-xl" placeholder="📦" required>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Nombre</label>
+                        <input type="text" id="edit-prod-name" class="input-apple py-3" placeholder="Ej. Refresco" required>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Precio ($)</label>
+                    <input type="number" id="edit-prod-price" class="input-apple py-3" placeholder="0.00" step="0.5" min="0" required>
+                </div>
+                <div class="pt-4 flex gap-2">
+                    <button type="button" id="btn-delete-prod" onclick="handleDeleteProduct()" class="btn-apple bg-appleRed/10 text-appleRed hidden flex-1 hover:bg-appleRed/20 text-sm">Eliminar</button>
+                    <button type="submit" class="btn-apple btn-primary flex-[2]">Guardar</button>
+                </div>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- CONTENEDOR DE TOASTS -->
+    <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none">
+        <!-- Toasts se inyectan aquí -->
+    </div>
+
+    <!-- JAVASCRIPT LÓGICA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-firestore.js";
+
+        // --- FIREBASE CONFIG ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDs-LiYmWaUd_Ait3krrnv5a3Ix61huTB8",
+            authDomain: "fiados-280bd.firebaseapp.com",
+            projectId: "fiados-280bd",
+            storageBucket: "fiados-280bd.firebasestorage.app",
+            messagingSenderId: "138959441352",
+            appId: "1:138959441352:web:e01b266a8025190f3684fd",
+            measurementId: "G-8WQ4J97CZP"
+        };
+        
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const auth = getAuth(app);
+        const db_firestore = getFirestore(app);
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'mi-tienda-app';
+        let firestoreUser = null;
+
+        // --- BASE DE DATOS LOCAL Y ESTADO ---
+        let db = {
+            users: [], 
+            products: []
+        };
+
+        const MOCK_PRODUCTS = [
+            { id: 'p1', name: 'Coca Cola 600ml', price: 22.00, icon: '🥤' },
+            { id: 'p2', name: 'Sabritas Sal 40g', price: 18.00, icon: '🥔' },
+            { id: 'p3', name: 'Gansito Marinela', price: 20.00, icon: '🍫' },
+            { id: 'p4', name: 'Atún Dolores Agua', price: 24.50, icon: '🐟' },
+            { id: 'p5', name: 'Leche Lala 1L', price: 30.00, icon: '🥛' },
+            { id: 'p6', name: 'Pan Bimbo Blanco', price: 45.00, icon: '🍞' },
+            { id: 'p7', name: 'Huevo San Juan (Docena)', price: 42.00, icon: '🥚' },
+            { id: 'p8', name: 'Maruchan Pollo', price: 16.00, icon: '🍜' },
+            { id: 'p9', name: 'Galletas Emperador', price: 19.00, icon: '🍪' },
+            { id: 'p10', name: 'Queso Panela 250g', price: 35.00, icon: '🧀' }
+        ];
+
+        let currentUser = null;
+        let activeModal = null;
+
+        // --- INICIALIZACIÓN ---
+        async function init() {
+            // Intentar Autenticación Firebase
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    try {
+                        await signInWithCustomToken(auth, __initial_auth_token);
+                    } catch (tokenError) {
+                        console.warn("Token fallido, intentando anónimo...", tokenError);
+                        await signInAnonymously(auth);
+                    }
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Error al autenticar en Firebase:", error);
+                
+                // Si la configuración "Anónimo" no está habilitada en la consola de Firebase del usuario
+                if (error.code === 'auth/configuration-not-found' || error.message.includes('configuration-not-found')) {
+                    showToast('⚠️ Debes habilitar "Anónimo" en Firebase Auth', 'error');
+                } else {
+                    showToast('Modo sin conexión activado', 'error');
+                }
+                
+                // Fallback: Iniciar usando solo LocalStorage si Firebase falla
+                iniciarModoLocal();
+                return; // Detener flujo de Firebase
+            }
+
+            // Flujo normal si Firebase autentica bien
+            onAuthStateChanged(auth, (user) => {
+                firestoreUser = user;
+                if (user) {
+                    setupRealtimeDb();
+                } else {
+                    iniciarModoLocal();
+                }
+            });
+        }
+
+        function iniciarModoLocal() {
+            const savedDb = localStorage.getItem('libreta_fiados_db');
+            if (savedDb) {
+                db = JSON.parse(savedDb);
+            } else {
+                db = { users: [], products: [...MOCK_PRODUCTS] };
+            }
+            populateProducts();
+            renderHome();
+        }
+
+        function setupRealtimeDb() {
+            const docRef = doc(db_firestore, 'artifacts', appId, 'public', 'data', 'storeData', 'mainData');
+            
+            onSnapshot(docRef, (snapshot) => {
+                if (snapshot.exists()) {
+                    db = snapshot.data();
+                    if (!db.users) db.users = [];
+                    if (!db.products || db.products.length === 0) {
+                        db.products = [...MOCK_PRODUCTS];
+                        saveDb();
+                    }
+                } else {
+                    db = { users: [], products: [...MOCK_PRODUCTS] };
+                    saveDb();
+                }
+
+                // Sincronizar UI
+                populateProducts();
+                
+                // Mantener la vista activa actualizada
+                if (!document.getElementById('view-admin').classList.contains('hidden')) {
+                    if (document.getElementById('admin-content-cobranza').classList.contains('hidden')) {
+                        renderAdminProductos();
+                    } else {
+                        renderAdminCobranza();
+                    }
+                } else if (!document.getElementById('view-dashboard').classList.contains('hidden') && currentUser) {
+                    const updatedUser = db.users.find(u => u.id === currentUser.id);
+                    if (updatedUser) {
+                        currentUser = updatedUser;
+                        renderDashboard();
+                    } else {
+                        goBackHome();
+                    }
+                } else {
+                    renderHome();
+                }
+            }, (error) => {
+                console.error("Error al sincronizar datos:", error);
+                showToast('Error de conexión con la nube', 'error');
+                iniciarModoLocal(); // Respaldo si se pierde la conexión
+            });
+        }
+
+        async function saveDb() {
+            // 1. Guardar localmente SIEMPRE como respaldo
+            localStorage.setItem('libreta_fiados_db', JSON.stringify(db));
+
+            // 2. Intentar guardar en Firebase si está disponible
+            if (!firestoreUser) return;
+            try {
+                const docRef = doc(db_firestore, 'artifacts', appId, 'public', 'data', 'storeData', 'mainData');
+                await setDoc(docRef, db);
+            } catch (e) {
+                console.error("Error guardando datos en Firebase", e);
+                showToast('Guardado localmente (Sin conexión)', 'success');
+            }
+        }
+
+        function formatMoney(amount) {
+            return new Intl.NumberFormat('es-MX', { style: 'currency', currency: 'MXN' }).format(amount);
+        }
+
+        // --- SISTEMA DE TOASTS ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            const isSuccess = type === 'success';
+            const icon = isSuccess 
+                ? `<svg class="w-5 h-5 text-appleGreen mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>`
+                : `<svg class="w-5 h-5 text-appleRed mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>`;
+
+            toast.className = `glass px-5 py-3 rounded-full shadow-apple-lg flex items-center mb-3 toast-enter pointer-events-auto`;
+            toast.innerHTML = `${icon} <span class="font-medium text-sm text-appleDark">${message}</span>`;
+            
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.replace('toast-enter', 'toast-exit');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 3000);
+        }
+
+        // --- SISTEMA DE MODALES ---
+        function openModal(modalId) {
+            const overlay = document.getElementById('modal-overlay');
+            const modal = document.getElementById(modalId);
+            
+            if (activeModal) activeModal.classList.add('hidden');
+            
+            overlay.classList.remove('hidden');
+            overlay.classList.add('modal-enter');
+            
+            modal.classList.remove('hidden');
+            modal.classList.add('flex', 'modal-content-enter');
+            
+            activeModal = modal;
+            
+            // Clean forms on open
+            if(modalId === 'modal-register') document.getElementById('form-register').reset();
+            if(modalId === 'modal-add-product') {
+                document.getElementById('form-add-product').reset();
+                document.getElementById('prod-price-display').innerText = '$0.00';
+            }
+            if(modalId === 'modal-admin-auth') document.getElementById('form-admin-auth').reset();
+            if(modalId === 'modal-admin-abono') document.getElementById('form-admin-abono').reset();
+        }
+
+        function closeModal() {
+            if (!activeModal) return;
+            
+            const overlay = document.getElementById('modal-overlay');
+            const modal = activeModal;
+            
+            overlay.classList.replace('modal-enter', 'modal-exit');
+            modal.classList.replace('modal-content-enter', 'modal-content-exit');
+            
+            setTimeout(() => {
+                overlay.classList.add('hidden');
+                overlay.classList.remove('modal-exit');
+                
+                modal.classList.add('hidden');
+                modal.classList.remove('flex', 'modal-content-exit');
+                activeModal = null;
+            }, 250); // Match CSS animation duration
+        }
+
+        // Cerrar modal al hacer clic afuera
+        document.getElementById('modal-overlay').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('modal-overlay')) {
+                closeModal();
+            }
+        });
+
+        // --- LÓGICA DE NEGOCIO ---
+
+        function handleRegister(e) {
+            e.preventDefault();
+            const name = document.getElementById('reg-name').value.trim();
+            const phone = document.getElementById('reg-phone').value.trim();
+            const pin = document.getElementById('reg-pin').value;
+            const pinConfirm = document.getElementById('reg-pin-confirm').value;
+
+            if (pin !== pinConfirm) {
+                showToast('Los NIP no coinciden', 'error');
+                return;
+            }
+
+            const existingUser = db.users.find(u => u.id === phone);
+            if (existingUser) {
+                showToast('Este número ya está registrado', 'error');
+                return;
+            }
+
+            const newUser = {
+                id: phone,
+                name: name,
+                pin: pin,
+                balance: 0,
+                transactions: []
+            };
+
+            db.users.push(newUser);
+            saveDb();
+            
+            closeModal();
+            showToast('Perfil creado exitosamente');
+            renderHome();
+        }
+
+        function renderHome() {
+            const homeView = document.getElementById('view-home');
+            const dashView = document.getElementById('view-dashboard');
+            const adminView = document.getElementById('view-admin');
+            
+            dashView.classList.add('hidden');
+            if(adminView) adminView.classList.add('hidden');
+            
+            homeView.classList.remove('hidden');
+            homeView.classList.add('modal-enter');
+
+            const grid = document.getElementById('users-grid');
+            grid.innerHTML = '';
+
+            if (db.users.length === 0) {
+                grid.innerHTML = `
+                    <div class="text-center py-12">
+                        <div class="w-16 h-16 bg-black/5 rounded-2xl mx-auto mb-4 flex items-center justify-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-appleLightText" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                            </svg>
+                        </div>
+                        <p class="text-appleDark font-medium">No hay clientes aún</p>
+                        <p class="text-sm text-appleLightText mt-1">Crea un perfil para empezar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Ordenar alfabéticamente
+            const sortedUsers = [...db.users].sort((a, b) => a.name.localeCompare(b.name));
+
+            sortedUsers.forEach(u => {
+                const card = document.createElement('div');
+                card.className = 'glass rounded-3xl p-5 shadow-apple cursor-pointer transition-transform transform active:scale-95 flex justify-between items-center hover:shadow-apple-lg';
+                card.onclick = () => openUserDashboard(u.id);
+                
+                // Generar iniciales para el avatar
+                const initials = u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="w-12 h-12 rounded-full bg-appleBlue/10 text-appleBlue flex items-center justify-center font-bold text-lg">
+                            ${initials}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-appleDark text-lg leading-tight">${u.name}</h3>
+                            <p class="text-xs text-appleLightText mt-1">Cel: •••••••${u.id.slice(-3)}</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs text-appleLightText mb-1 uppercase tracking-wider">Deuda</p>
+                        <p class="font-bold text-appleRed text-lg">${formatMoney(u.balance)}</p>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openUserDashboard(userId) {
+            currentUser = db.users.find(u => u.id === userId);
+            if (!currentUser) return;
+            renderDashboard();
+        }
+
+        function goBackHome() {
+            currentUser = null;
+            renderHome();
+        }
+
+        function renderDashboard() {
+            const homeView = document.getElementById('view-home');
+            const dashView = document.getElementById('view-dashboard');
+            
+            homeView.classList.add('hidden');
+            dashView.classList.remove('hidden');
+            dashView.classList.add('modal-enter');
+
+            // Actualizar UI
+            document.getElementById('dash-name').innerText = currentUser.name.split(' ')[0];
+            document.getElementById('dash-balance').innerText = formatMoney(currentUser.balance);
+
+            // Renderizar movimientos
+            const listContainer = document.getElementById('transactions-list');
+            listContainer.innerHTML = '';
+
+            if (currentUser.transactions.length === 0) {
+                listContainer.innerHTML = `
+                    <div class="text-center py-8 text-appleLightText">
+                        <p>No hay fiados pendientes.</p>
+                        <p class="text-sm mt-1">¡Todo limpio por ahora!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Mostrar ordenados por más reciente
+            const sortedTx = [...currentUser.transactions].reverse();
+            
+            sortedTx.forEach(tx => {
+                const date = new Date(tx.date).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                const isAbono = tx.type === 'abono';
+                const div = document.createElement('div');
+                div.className = 'glass rounded-2xl p-4 flex justify-between items-center';
+                div.innerHTML = `
+                    <div class="flex items-center">
+                        <div class="w-10 h-10 ${isAbono ? 'bg-appleGreen/10 text-appleGreen' : 'bg-white text-appleDark shadow-sm'} rounded-xl flex items-center justify-center text-xl mr-4">
+                            ${tx.icon}
+                        </div>
+                        <div>
+                            <p class="font-semibold text-appleDark text-sm">${tx.productName}</p>
+                            <p class="text-xs text-appleLightText">${date}</p>
+                        </div>
+                    </div>
+                    <div class="font-bold ${isAbono ? 'text-appleGreen' : 'text-appleRed'}">
+                        ${isAbono ? '-' : '+'}${formatMoney(tx.amount)}
+                    </div>
+                `;
+                listContainer.appendChild(div);
+            });
+        }
+
+        function populateProducts() {
+            const select = document.getElementById('prod-select');
+            select.innerHTML = '<option value="" disabled selected>Elige un producto...</option>';
+            db.products.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.id;
+                option.textContent = `${p.icon} ${p.name}`;
+                select.appendChild(option);
+            });
+        }
+
+        function updateProductPrice() {
+            const select = document.getElementById('prod-select');
+            const selectedId = select.value;
+            const product = db.products.find(p => p.id === selectedId);
+            
+            if (product) {
+                document.getElementById('prod-price-display').innerText = formatMoney(product.price);
+            }
+        }
+
+        function handleConfirmPurchase(e) {
+            e.preventDefault();
+            
+            if (!currentUser) return; // Paranoia check
+
+            const selectedId = document.getElementById('prod-select').value;
+            const enteredPin = document.getElementById('prod-pin').value;
+
+            if (enteredPin !== currentUser.pin) {
+                showToast('NIP de autorización incorrecto', 'error');
+                return;
+            }
+
+            const product = db.products.find(p => p.id === selectedId);
+            if (!product) {
+                showToast('Error al seleccionar producto', 'error');
+                return;
+            }
+
+            // Crear transacción
+            const tx = {
+                id: Date.now().toString(),
+                productId: product.id,
+                productName: product.name,
+                icon: product.icon,
+                amount: product.price,
+                type: 'cargo',
+                date: new Date().toISOString()
+            };
+
+            // Actualizar usuario en DB
+            const userIndex = db.users.findIndex(u => u.id === currentUser.id);
+            if(userIndex !== -1) {
+                db.users[userIndex].transactions.push(tx);
+                db.users[userIndex].balance += tx.amount;
+                
+                // Actualizar currentUser ref
+                currentUser = db.users[userIndex];
+                saveDb();
+
+                closeModal();
+                showToast(`${product.name} agregado a tu cuenta`);
+                renderDashboard();
+            }
+        }
+
+        // --- LÓGICA DE ADMIN ---
+        const ADMIN_PIN = '8529';
+
+        function handleAdminAuth(e) {
+            e.preventDefault();
+            const pin = document.getElementById('admin-pin').value;
+            if (pin === ADMIN_PIN) {
+                closeModal();
+                renderAdmin();
+                showToast('Modo Admin activado');
+            } else {
+                showToast('NIP Admin incorrecto', 'error');
+            }
+        }
+
+        function exitAdmin() {
+            renderHome();
+        }
+
+        function switchAdminTab(tab) {
+            const tabCobranza = document.getElementById('tab-cobranza');
+            const tabProductos = document.getElementById('tab-productos');
+            const contentCobranza = document.getElementById('admin-content-cobranza');
+            const contentProductos = document.getElementById('admin-content-productos');
+
+            if (tab === 'cobranza') {
+                tabCobranza.className = 'flex-1 py-2 text-sm font-semibold rounded-full bg-white shadow-sm text-appleDark transition-all';
+                tabProductos.className = 'flex-1 py-2 text-sm font-semibold rounded-full text-appleLightText transition-all';
+                contentCobranza.classList.remove('hidden');
+                contentProductos.classList.add('hidden');
+                renderAdminCobranza();
+            } else {
+                tabProductos.className = 'flex-1 py-2 text-sm font-semibold rounded-full bg-white shadow-sm text-appleDark transition-all';
+                tabCobranza.className = 'flex-1 py-2 text-sm font-semibold rounded-full text-appleLightText transition-all';
+                contentProductos.classList.remove('hidden');
+                contentCobranza.classList.add('hidden');
+                renderAdminProductos();
+            }
+        }
+
+        function renderAdmin() {
+            document.getElementById('view-home').classList.add('hidden');
+            document.getElementById('view-dashboard').classList.add('hidden');
+            
+            const adminView = document.getElementById('view-admin');
+            adminView.classList.remove('hidden');
+            adminView.classList.add('modal-enter');
+            
+            switchAdminTab('cobranza');
+        }
+
+        function renderAdminCobranza() {
+            const container = document.getElementById('admin-content-cobranza');
+            container.innerHTML = '';
+
+            const sortedUsers = [...db.users].sort((a, b) => b.balance - a.balance); // Deudores mayores primero
+
+            if (sortedUsers.length === 0) {
+                container.innerHTML = '<p class="text-center text-appleLightText py-6">No hay clientes aún.</p>';
+                return;
+            }
+
+            sortedUsers.forEach(u => {
+                const card = document.createElement('div');
+                card.className = 'glass rounded-3xl p-5 shadow-sm flex justify-between items-center';
+                
+                const initials = u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-appleBlue/10 text-appleBlue flex items-center justify-center font-bold text-sm">
+                            ${initials}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-appleDark text-sm leading-tight">${u.name}</h3>
+                            <p class="text-xs text-appleLightText mt-0.5">Cel: ${u.id.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3')}</p>
+                            <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleGreen'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
+                        </div>
+                    </div>
+                    <button onclick="openAbonoModal('${u.id}')" class="px-4 py-2 bg-appleGreen/10 text-appleGreen text-sm font-bold rounded-full hover:bg-appleGreen/20 transition-colors" ${u.balance <= 0 ? 'disabled style="opacity:0.5"' : ''}>
+                        Abonar
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function renderAdminProductos() {
+            const container = document.getElementById('admin-products-list');
+            container.innerHTML = '';
+
+            db.products.forEach(p => {
+                const card = document.createElement('div');
+                card.className = 'glass rounded-2xl p-4 shadow-sm flex justify-between items-center';
+                card.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="text-2xl w-8 text-center">${p.icon}</div>
+                        <div>
+                            <h3 class="font-bold text-appleDark text-sm">${p.name}</h3>
+                            <p class="text-xs text-appleLightText">${formatMoney(p.price)}</p>
+                        </div>
+                    </div>
+                    <button onclick="openProductModal('${p.id}')" class="px-4 py-2 bg-black/5 text-appleDark text-sm font-bold rounded-full hover:bg-black/10 transition-colors">
+                        Editar
+                    </button>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openAbonoModal(userId) {
+            const user = db.users.find(u => u.id === userId);
+            if (!user) return;
+            document.getElementById('abono-client-id').value = user.id;
+            document.getElementById('abono-client-name').innerText = user.name;
+            openModal('modal-admin-abono');
+        }
+
+        function handleAdminAbono(e) {
+            e.preventDefault();
+            const userId = document.getElementById('abono-client-id').value;
+            const amount = parseFloat(document.getElementById('abono-amount').value);
+            
+            const userIndex = db.users.findIndex(u => u.id === userId);
+            if (userIndex !== -1 && amount > 0) {
+                const user = db.users[userIndex];
+                
+                if (amount > user.balance) {
+                    showToast('El abono es mayor a la deuda', 'error');
+                    return;
+                }
+
+                const tx = {
+                    id: Date.now().toString(),
+                    productId: 'abono',
+                    productName: 'Abono en efectivo',
+                    icon: '💵',
+                    amount: amount,
+                    type: 'abono',
+                    date: new Date().toISOString()
+                };
+
+                user.transactions.push(tx);
+                user.balance -= amount;
+                saveDb();
+
+                closeModal();
+                showToast(`Abono de ${formatMoney(amount)} aplicado`);
+                renderAdminCobranza();
+            }
+        }
+
+        function openProductModal(prodId = null) {
+            const title = document.getElementById('modal-product-title');
+            const form = document.getElementById('form-admin-product');
+            const btnDelete = document.getElementById('btn-delete-prod');
+            
+            form.reset();
+            
+            if (prodId) {
+                const product = db.products.find(p => p.id === prodId);
+                if (product) {
+                    title.innerText = 'Editar Producto';
+                    document.getElementById('edit-prod-id').value = product.id;
+                    document.getElementById('edit-prod-icon').value = product.icon;
+                    document.getElementById('edit-prod-name').value = product.name;
+                    document.getElementById('edit-prod-price').value = product.price;
+                    btnDelete.classList.remove('hidden');
+                }
+            } else {
+                title.innerText = 'Nuevo Producto';
+                document.getElementById('edit-prod-id').value = '';
+                btnDelete.classList.add('hidden');
+            }
+            openModal('modal-admin-product');
+        }
+
+        function handleSaveProduct(e) {
+            e.preventDefault();
+            const id = document.getElementById('edit-prod-id').value;
+            const icon = document.getElementById('edit-prod-icon').value || '📦';
+            const name = document.getElementById('edit-prod-name').value;
+            const price = parseFloat(document.getElementById('edit-prod-price').value);
+
+            if (id) {
+                // Editar
+                const prodIndex = db.products.findIndex(p => p.id === id);
+                if (prodIndex !== -1) {
+                    db.products[prodIndex] = { id, icon, name, price };
+                    showToast('Producto actualizado');
+                }
+            } else {
+                // Nuevo
+                const newId = 'p_' + Date.now();
+                db.products.push({ id: newId, icon, name, price });
+                showToast('Producto creado');
+            }
+            
+            saveDb();
+            populateProducts(); // Actualizar el select
+            closeModal();
+            renderAdminProductos();
+        }
+
+        function handleDeleteProduct() {
+            const id = document.getElementById('edit-prod-id').value;
+            if (id) {
+                // Se removió confirm() nativo por restricciones de iframe
+                db.products = db.products.filter(p => p.id !== id);
+                saveDb();
+                populateProducts();
+                closeModal();
+                showToast('Producto eliminado');
+                renderAdminProductos();
+            }
+        }
+
+        // Exportar funciones globales para HTML inline event handlers
+        window.openModal = openModal;
+        window.closeModal = closeModal;
+        window.handleRegister = handleRegister;
+        window.openUserDashboard = openUserDashboard;
+        window.goBackHome = goBackHome;
+        window.updateProductPrice = updateProductPrice;
+        window.handleConfirmPurchase = handleConfirmPurchase;
+        window.handleAdminAuth = handleAdminAuth;
+        window.exitAdmin = exitAdmin;
+        window.switchAdminTab = switchAdminTab;
+        window.openAbonoModal = openAbonoModal;
+        window.handleAdminAbono = handleAdminAbono;
+        window.openProductModal = openProductModal;
+        window.handleSaveProduct = handleSaveProduct;
+        window.handleDeleteProduct = handleDeleteProduct;
+
+        // Arrancar
+        window.onload = init;
+
+    </script>
+</body>
+</html>
