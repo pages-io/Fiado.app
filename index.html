@@ -279,8 +279,8 @@
                     <input type="text" id="reg-name" class="input-apple py-3" placeholder="Ej. Juan Pérez" required>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Celular (Será tu ID)</label>
-                    <input type="tel" id="reg-phone" class="input-apple py-3" placeholder="10 dígitos" pattern="[0-9]{10}" required>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Fecha de Nac. (Será tu ID)</label>
+                    <input type="tel" id="reg-dob" class="input-apple py-3" placeholder="DDMMAAAA (Ej. 02021999)" pattern="[0-9]{8}" maxlength="8" required>
                 </div>
                 <div class="flex gap-4">
                     <div class="flex-1">
@@ -660,7 +660,7 @@
         function handleRegister(e) {
             e.preventDefault();
             const name = document.getElementById('reg-name').value.trim();
-            const phone = document.getElementById('reg-phone').value.trim();
+            const dob = document.getElementById('reg-dob').value.trim();
             const pin = document.getElementById('reg-pin').value;
             const pinConfirm = document.getElementById('reg-pin-confirm').value;
 
@@ -669,14 +669,14 @@
                 return;
             }
 
-            const existingUser = db.users.find(u => u.id === phone);
+            const existingUser = db.users.find(u => u.id === dob);
             if (existingUser) {
-                showToast('Este número ya está registrado', 'error');
+                showToast('Esta fecha ya está registrada como ID', 'error');
                 return;
             }
 
             const newUser = {
-                id: phone,
+                id: dob,
                 name: name,
                 pin: pin,
                 balance: 0,
@@ -738,7 +738,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-appleDark text-lg leading-tight">${u.name}</h3>
-                            <p class="text-xs text-appleLightText mt-1">Cel: •••••••${u.id.slice(-3)}</p>
+                            <p class="text-xs text-appleLightText mt-1">ID: ••••${u.id.slice(-4)}</p>
                         </div>
                     </div>
                     <div class="text-right">
@@ -955,7 +955,7 @@
                         </div>
                         <div>
                             <h3 class="font-bold text-appleDark text-sm leading-tight">${u.name}</h3>
-                            <p class="text-xs text-appleLightText mt-0.5">Cel: ${u.id.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3')}</p>
+                            <p class="text-xs text-appleLightText mt-0.5">Nacimiento: ${u.id.length === 8 ? u.id.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3') : u.id}</p>
                             <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleGreen'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
                         </div>
                     </div>
