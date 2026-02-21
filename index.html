@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>libreta de Fiados</title>
+    <title>Libreta de Fiados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -309,23 +309,30 @@
                 </button>
             </div>
             
-            <form id="form-add-product" class="space-y-5" onsubmit="handleConfirmPurchase(event)">
+            <form id="form-add-product" class="space-y-4" onsubmit="handleConfirmPurchase(event)">
                 <div>
-                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Selecciona el producto</label>
-                    <div class="relative">
-                        <select id="prod-select" class="input-apple appearance-none pr-10 bg-white" required onchange="updateProductPrice()">
-                            <option value="" disabled selected>Elige un producto...</option>
-                            <!-- Llenado vía JS -->
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-appleLightText">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                    <label class="block text-xs font-medium text-appleLightText mb-1 ml-1">Selecciona y agrega a la lista</label>
+                    <div class="flex gap-2">
+                        <div class="relative flex-grow">
+                            <select id="prod-select" class="input-apple appearance-none pr-10 bg-white text-sm" required>
+                                <option value="" disabled selected>Elige un producto...</option>
+                                <!-- Llenado vía JS -->
+                            </select>
+                            <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-appleLightText">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                            </div>
                         </div>
+                        <button type="button" onclick="addToCart()" class="bg-appleBlue text-white w-12 rounded-xl flex items-center justify-center shadow-sm hover:bg-appleBlueHover active:scale-95 transition-transform text-xl font-bold">+</button>
                     </div>
                 </div>
 
-                <div class="bg-black/5 rounded-2xl p-4 flex justify-between items-center">
-                    <span class="text-sm font-medium text-appleLightText">Precio:</span>
-                    <span class="text-2xl font-bold text-appleDark" id="prod-price-display">$0.00</span>
+                <!-- Lista del Carrito -->
+                <div id="cart-list" class="max-h-40 overflow-y-auto space-y-2 bg-black/5 rounded-xl p-2 hidden">
+                </div>
+
+                <div class="bg-black/5 rounded-2xl p-4 flex justify-between items-center mt-2">
+                    <span class="text-sm font-medium text-appleLightText">Total:</span>
+                    <span class="text-2xl font-bold text-appleDark" id="cart-total-display">$0.00</span>
                 </div>
 
                 <div class="border-t border-black/10 pt-4">
@@ -334,7 +341,7 @@
                 </div>
 
                 <div class="pt-2">
-                    <button type="submit" class="btn-apple btn-primary w-full shadow-apple">Confirmar Cargo</button>
+                    <button type="submit" class="btn-apple btn-primary w-full shadow-apple">Confirmar Pedido</button>
                 </div>
             </form>
         </div>
@@ -447,27 +454,49 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'mi-tienda-app';
         let firestoreUser = null;
 
-        // --- BASE DE DATOS LOCAL Y ESTADO ---
+        // --- LOKAL A BASE TI DATOS KEN KASAAD ---
         let db = {
             users: [], 
             products: []
         };
 
         const MOCK_PRODUCTS = [
-            { id: 'p1', name: 'Coca Cola 600ml', price: 22.00, icon: '🥤' },
-            { id: 'p2', name: 'Sabritas Sal 40g', price: 18.00, icon: '🥔' },
-            { id: 'p3', name: 'Gansito Marinela', price: 20.00, icon: '🍫' },
-            { id: 'p4', name: 'Atún Dolores Agua', price: 24.50, icon: '🐟' },
-            { id: 'p5', name: 'Leche Lala 1L', price: 30.00, icon: '🥛' },
-            { id: 'p6', name: 'Pan Bimbo Blanco', price: 45.00, icon: '🍞' },
-            { id: 'p7', name: 'Huevo San Juan (Docena)', price: 42.00, icon: '🥚' },
-            { id: 'p8', name: 'Maruchan Pollo', price: 16.00, icon: '🍜' },
-            { id: 'p9', name: 'Galletas Emperador', price: 19.00, icon: '🍪' },
-            { id: 'p10', name: 'Queso Panela 250g', price: 35.00, icon: '🧀' }
+            { id: 'p1', name: 'Papas sabores', price: 25.00, icon: '🥔' },
+            { id: 'p2', name: 'Coca 600ml', price: 22.00, icon: '🥤' },
+            { id: 'p3', name: 'Coca 355', price: 15.00, icon: '🥤' },
+            { id: 'p4', name: 'FuseTea', price: 25.00, icon: '🧃' },
+            { id: 'p5', name: 'Emperador CH', price: 20.00, icon: '🍪' },
+            { id: 'p6', name: 'Oreo', price: 20.00, icon: '🍪' },
+            { id: 'p7', name: 'Chokis G', price: 20.00, icon: '🍪' },
+            { id: 'p8', name: 'Chokis CH', price: 15.00, icon: '🍪' },
+            { id: 'p9', name: 'Príncipe', price: 15.00, icon: '🍪' },
+            { id: 'p10', name: 'Paquetazo', price: 25.00, icon: '🍿' },
+            { id: 'p11', name: 'Emperador Limon', price: 20.00, icon: '🍪' },
+            { id: 'p12', name: 'Galleta Maria', price: 16.00, icon: '🍪' },
+            { id: 'p13', name: 'Marianita', price: 18.00, icon: '🍪' },
+            { id: 'p14', name: 'Chetos', price: 20.00, icon: '🧀' },
+            { id: 'p15', name: 'Plativolos', price: 15.00, icon: '🍪' },
+            { id: 'p16', name: 'Sangría', price: 23.00, icon: '🥤' },
+            { id: 'p17', name: 'Manzanita Sol', price: 23.00, icon: '🍎' },
+            { id: 'p18', name: 'Spray', price: 15.00, icon: '🥤' },
+            { id: 'p19', name: 'Jugo de Mango', price: 13.00, icon: '🥭' },
+            { id: 'p20', name: 'Sponch', price: 15.00, icon: '🧁' },
+            { id: 'p21', name: 'Tostitos', price: 20.00, icon: '🌽' },
+            { id: 'p22', name: 'Crankies', price: 18.00, icon: '🍪' },
+            { id: 'p23', name: 'Pepsi', price: 15.00, icon: '🥤' },
+            { id: 'p24', name: 'Fruts', price: 18.00, icon: '🧃' },
+            { id: 'p25', name: 'Sensao', price: 23.00, icon: '🥤' },
+            { id: 'p26', name: 'Emperador Senzo', price: 15.00, icon: '🍪' },
+            { id: 'p27', name: 'Emperador G chocolate', price: 20.00, icon: '🍪' },
+            { id: 'p28', name: 'Giro', price: 15.00, icon: '🍪' },
+            { id: 'p29', name: 'Arcoíris', price: 20.00, icon: '🌈' },
+            { id: 'p30', name: 'Biscochos', price: 18.00, icon: '🥐' },
+            { id: 'p31', name: 'Bombones', price: 10.00, icon: '🍬' }
         ];
 
         let currentUser = null;
         let activeModal = null;
+        let currentCart = [];
 
         // --- INICIALIZACIÓN ---
         async function init() {
@@ -628,7 +657,9 @@
             if(modalId === 'modal-register') document.getElementById('form-register').reset();
             if(modalId === 'modal-add-product') {
                 document.getElementById('form-add-product').reset();
-                document.getElementById('prod-price-display').innerText = '$0.00';
+                // Limpiamos el carrito al abrir
+                currentCart = [];
+                renderCart();
             }
             if(modalId === 'modal-admin-auth') document.getElementById('form-admin-auth').reset();
             if(modalId === 'modal-admin-abono') document.getElementById('form-admin-abono').reset();
@@ -824,19 +855,63 @@
             db.products.forEach(p => {
                 const option = document.createElement('option');
                 option.value = p.id;
-                option.textContent = `${p.icon} ${p.name}`;
+                option.textContent = `${p.icon} ${p.name} - ${formatMoney(p.price)}`;
                 select.appendChild(option);
             });
         }
 
-        function updateProductPrice() {
+        function addToCart() {
             const select = document.getElementById('prod-select');
             const selectedId = select.value;
-            const product = db.products.find(p => p.id === selectedId);
             
-            if (product) {
-                document.getElementById('prod-price-display').innerText = formatMoney(product.price);
+            if(!selectedId) {
+                showToast('Selecciona un producto de la lista primero', 'error');
+                return;
             }
+            
+            const product = db.products.find(p => p.id === selectedId);
+            if(product) {
+                currentCart.push({...product});
+                renderCart();
+                // Quitar el "required" del input si hay productos para que se pueda dar click en el botón + sin problemas
+                document.getElementById('prod-select').removeAttribute('required');
+            }
+        }
+
+        function removeFromCart(index) {
+            currentCart.splice(index, 1);
+            if(currentCart.length === 0) {
+                document.getElementById('prod-select').setAttribute('required', 'required');
+            }
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cart-list');
+            const totalDisplay = document.getElementById('cart-total-display');
+            let total = 0;
+            list.innerHTML = '';
+            
+            if(currentCart.length === 0) {
+                list.classList.add('hidden');
+                totalDisplay.innerText = '$0.00';
+                return;
+            }
+            
+            list.classList.remove('hidden');
+            currentCart.forEach((item, index) => {
+                total += item.price;
+                list.innerHTML += `
+                    <div class="flex justify-between items-center bg-white p-2.5 rounded-lg shadow-sm">
+                        <span class="text-sm font-medium text-appleDark truncate pr-2">${item.icon} ${item.name}</span>
+                        <div class="flex items-center gap-3">
+                            <span class="text-sm font-bold text-appleLightText whitespace-nowrap">${formatMoney(item.price)}</span>
+                            <button type="button" onclick="removeFromCart(${index})" class="text-appleRed bg-appleRed/10 w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 hover:bg-appleRed/20 transition-colors">✕</button>
+                        </div>
+                    </div>
+                `;
+            });
+            totalDisplay.innerText = formatMoney(total);
         }
 
         function handleConfirmPurchase(e) {
@@ -844,7 +919,11 @@
             
             if (!currentUser) return; // Paranoia check
 
-            const selectedId = document.getElementById('prod-select').value;
+            if (currentCart.length === 0) {
+                showToast('Agrega al menos un producto a la lista usando el botón "+"', 'error');
+                return;
+            }
+
             const enteredPin = document.getElementById('prod-pin').value;
 
             if (enteredPin !== currentUser.pin) {
@@ -852,35 +931,37 @@
                 return;
             }
 
-            const product = db.products.find(p => p.id === selectedId);
-            if (!product) {
-                showToast('Error al seleccionar producto', 'error');
-                return;
-            }
-
-            // Crear transacción
-            const tx = {
-                id: Date.now().toString(),
-                productId: product.id,
-                productName: product.name,
-                icon: product.icon,
-                amount: product.price,
-                type: 'cargo',
-                date: new Date().toISOString()
-            };
+            const now = new Date();
+            let totalAmount = 0;
+            const addedCount = currentCart.length;
 
             // Actualizar usuario en DB
             const userIndex = db.users.findIndex(u => u.id === currentUser.id);
             if(userIndex !== -1) {
-                db.users[userIndex].transactions.push(tx);
-                db.users[userIndex].balance += tx.amount;
+                // Registrar cada producto como una transacción individual en la lista
+                currentCart.forEach((item, index) => {
+                    const txTime = new Date(now.getTime() + index).toISOString(); // para evitar ids duplicados si son en el mismo milisegundo
+                    const tx = {
+                        id: Date.now().toString() + '-' + index,
+                        productId: item.id,
+                        productName: item.name,
+                        icon: item.icon,
+                        amount: item.price,
+                        type: 'cargo',
+                        date: txTime
+                    };
+                    db.users[userIndex].transactions.push(tx);
+                    totalAmount += item.price;
+                });
+
+                db.users[userIndex].balance += totalAmount;
                 
                 // Actualizar currentUser ref
                 currentUser = db.users[userIndex];
                 saveDb();
 
                 closeModal();
-                showToast(`${product.name} agregado a tu cuenta`);
+                showToast(`${addedCount} producto(s) agregados exitosamente`);
                 renderDashboard();
             }
         }
@@ -1108,7 +1189,8 @@
         window.handleRegister = handleRegister;
         window.openUserDashboard = openUserDashboard;
         window.goBackHome = goBackHome;
-        window.updateProductPrice = updateProductPrice;
+        window.addToCart = addToCart;
+        window.removeFromCart = removeFromCart;
         window.handleConfirmPurchase = handleConfirmPurchase;
         window.handleAdminAuth = handleAdminAuth;
         window.exitAdmin = exitAdmin;
