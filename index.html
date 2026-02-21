@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Libreta de Fiados</title>
+    <title>libreta de Fiados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -471,42 +471,39 @@
 
         // --- INICIALIZACIÓN ---
         async function init() {
+            let authExitoso = false;
+
             // Intentar Autenticación Firebase
             try {
                 if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
                     try {
                         await signInWithCustomToken(auth, __initial_auth_token);
+                        authExitoso = true;
                     } catch (tokenError) {
-                        console.warn("Token fallido, intentando anónimo...", tokenError);
                         await signInAnonymously(auth);
+                        authExitoso = true;
                     }
                 } else {
                     await signInAnonymously(auth);
+                    authExitoso = true;
                 }
             } catch (error) {
-                console.error("Error al autenticar en Firebase:", error);
-                
-                // Si la configuración "Anónimo" no está habilitada en la consola de Firebase del usuario
-                if (error.code === 'auth/configuration-not-found' || error.message.includes('configuration-not-found')) {
-                    showToast('⚠️ Debes habilitar "Anónimo" en Firebase Auth', 'error');
-                } else {
-                    showToast('Modo sin conexión activado', 'error');
-                }
-                
-                // Fallback: Iniciar usando solo LocalStorage si Firebase falla
-                iniciarModoLocal();
-                return; // Detener flujo de Firebase
+                console.warn("Firebase Auth no activado. Como tus reglas de Firestore son públicas, nos conectaremos sin autenticación.", error);
             }
 
             // Flujo normal si Firebase autentica bien
             onAuthStateChanged(auth, (user) => {
                 firestoreUser = user;
-                if (user) {
+                if (user && authExitoso) {
                     setupRealtimeDb();
-                } else {
-                    iniciarModoLocal();
                 }
             });
+
+            // Flujo si Auth falla (debido a que "Anónimo" no está habilitado en tu consola)
+            // Se conectará a la BD de todas formas porque tus reglas 'allow read, write' lo permiten.
+            if (!authExitoso) {
+                setupRealtimeDb();
+            }
         }
 
         function iniciarModoLocal() {
@@ -531,9 +528,18 @@
                         db.products = [...MOCK_PRODUCTS];
                         saveDb();
                     }
+                    // Sincronizar copia local como respaldo
+                    localStorage.setItem('libreta_fiados_db', JSON.stringify(db));
                 } else {
-                    db = { users: [], products: [...MOCK_PRODUCTS] };
-                    saveDb();
+                    // El documento en la nube no existe.
+                    // Rescatar datos locales primero para NO sobreescribir con datos vacíos
+                    const savedDb = localStorage.getItem('libreta_fiados_db');
+                    if (savedDb) {
+                        db = JSON.parse(savedDb);
+                    } else {
+                        db = { users: [], products: [...MOCK_PRODUCTS] };
+                    }
+                    saveDb(); // Subir los datos rescatados a la nube
                 }
 
                 // Sincronizar UI
@@ -568,14 +574,13 @@
             // 1. Guardar localmente SIEMPRE como respaldo
             localStorage.setItem('libreta_fiados_db', JSON.stringify(db));
 
-            // 2. Intentar guardar en Firebase si está disponible
-            if (!firestoreUser) return;
+            // 2. Intentar guardar en Firebase directamente (eliminamos el requisito de auth)
             try {
                 const docRef = doc(db_firestore, 'artifacts', appId, 'public', 'data', 'storeData', 'mainData');
                 await setDoc(docRef, db);
             } catch (e) {
                 console.error("Error guardando datos en Firebase", e);
-                showToast('Guardado localmente (Sin conexión)', 'success');
+                showToast('La nube bloqueó el guardado.', 'error');
             }
         }
 
