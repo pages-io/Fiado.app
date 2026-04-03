@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>libreta de Fiados</title>
+    <title>Libreta de Fiados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -158,10 +158,8 @@
 </head>
 <body class="min-h-screen relative overflow-x-hidden flex flex-col items-center">
 
-    <!-- CONTENEDOR PRINCIPAL -->
     <div id="app-container" class="w-full max-w-md mx-auto min-h-screen flex flex-col relative px-6 py-10 transition-opacity duration-300">
         
-        <!-- PANTALLA DE INICIO (LISTA DE CLIENTES) -->
         <div id="view-home" class="flex flex-col flex-grow">
             <header class="flex justify-between items-center mb-8">
                 <div>
@@ -184,13 +182,10 @@
             </header>
 
             <div id="users-grid" class="flex flex-col gap-4 pb-10">
-                <!-- Tarjetas dinámicas vía JS -->
-            </div>
+                </div>
         </div>
 
-        <!-- PANTALLA DE PANEL DE USUARIO (DASHBOARD) -->
         <div id="view-dashboard" class="hidden flex-col flex-grow">
-            <!-- Header -->
             <header class="flex justify-between items-center mb-8">
                 <button onclick="goBackHome()" class="flex items-center text-appleBlue font-medium hover:opacity-70 transition-opacity">
                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -204,7 +199,6 @@
                 </div>
             </header>
 
-            <!-- Balance Card -->
             <div class="glass rounded-3xl p-8 mb-8 text-center shadow-apple relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-appleBlue to-purple-500"></div>
                 <p class="text-appleLightText font-medium mb-2">Total a pagar</p>
@@ -219,16 +213,13 @@
                 </div>
             </div>
 
-            <!-- Movimientos -->
             <div class="flex-grow">
                 <h4 class="text-lg font-bold text-appleDark mb-4">Movimientos recientes</h4>
                 <div id="transactions-list" class="space-y-3 pb-10">
-                    <!-- Dinámico vía JS -->
-                </div>
+                    </div>
             </div>
         </div>
 
-        <!-- PANTALLA DE ADMIN -->
         <div id="view-admin" class="hidden flex-col flex-grow">
             <header class="flex justify-between items-center mb-6">
                 <div>
@@ -239,16 +230,13 @@
                 </button>
             </header>
 
-            <!-- Tabs -->
             <div class="flex p-1 bg-black/5 rounded-full mb-6 relative">
                 <button onclick="switchAdminTab('cobranza')" id="tab-cobranza" class="flex-1 py-2 text-sm font-semibold rounded-full bg-white shadow-sm text-appleDark transition-all">Cobranza</button>
                 <button onclick="switchAdminTab('productos')" id="tab-productos" class="flex-1 py-2 text-sm font-semibold rounded-full text-appleLightText transition-all">Productos</button>
             </div>
 
-            <!-- Content -->
             <div id="admin-content-cobranza" class="flex-col gap-4 pb-10 flex">
-                <!-- Clients list for Abonos -->
-            </div>
+                </div>
             
             <div id="admin-content-productos" class="flex-col gap-4 pb-10 hidden">
                 <div class="flex gap-2 mb-2">
@@ -264,10 +252,8 @@
         </div>
     </div>
 
-    <!-- OVERLAY DE MODALES -->
     <div id="modal-overlay" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-40 hidden flex items-center justify-center p-4">
         
-        <!-- MODAL: REGISTRO -->
         <div id="modal-register" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-appleDark">Nuevo Perfil</h3>
@@ -303,7 +289,6 @@
             </form>
         </div>
 
-        <!-- MODAL: AGREGAR PRODUCTO -->
         <div id="modal-add-product" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-appleDark">Agregar Fiado</h3>
@@ -321,8 +306,7 @@
                         <div class="relative flex-grow">
                             <select id="prod-select" class="input-apple appearance-none pr-10 bg-white text-sm" required>
                                 <option value="" disabled selected>Elige un producto...</option>
-                                <!-- Llenado vía JS -->
-                            </select>
+                                </select>
                             <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-appleLightText">
                                 <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                             </div>
@@ -331,7 +315,6 @@
                     </div>
                 </div>
 
-                <!-- Lista del Carrito -->
                 <div id="cart-list" class="max-h-40 overflow-y-auto space-y-2 bg-black/5 rounded-xl p-2 hidden">
                 </div>
 
@@ -351,7 +334,6 @@
             </form>
         </div>
 
-        <!-- MODAL: ADMIN AUTH -->
         <div id="modal-admin-auth" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-appleDark">Acceso Admin</h3>
@@ -371,7 +353,6 @@
             </form>
         </div>
 
-        <!-- MODAL: ADMIN ABONO -->
         <div id="modal-admin-abono" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-appleDark">Registrar Abono</h3>
@@ -394,7 +375,20 @@
             </form>
         </div>
 
-        <!-- MODAL: ADMIN PRODUCTO -->
+        <div id="modal-admin-history" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-appleDark">Historial</h3>
+                <button onclick="closeModal()" class="text-appleLightText hover:text-appleDark bg-black/5 rounded-full p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <p class="text-sm text-appleLightText mb-4 text-center">Cliente: <span id="history-client-name" class="font-bold text-appleDark"></span></p>
+            <div id="admin-history-list" class="max-h-64 overflow-y-auto space-y-2 pr-1">
+                </div>
+        </div>
+
         <div id="modal-admin-product" class="glass rounded-3xl w-full max-w-sm p-6 shadow-apple-lg hidden flex-col">
             <div class="flex justify-between items-center mb-6">
                 <h3 class="text-xl font-bold text-appleDark" id="modal-product-title">Nuevo Producto</h3>
@@ -429,12 +423,9 @@
 
     </div>
 
-    <!-- CONTENEDOR DE TOASTS -->
     <div id="toast-container" class="fixed bottom-10 left-1/2 transform -translate-x-1/2 z-50 flex flex-col items-center pointer-events-none">
-        <!-- Toasts se inyectan aquí -->
-    </div>
+        </div>
 
-    <!-- JAVASCRIPT LÓGICA -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-app.js";
         import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.9.0/firebase-analytics.js";
@@ -459,7 +450,7 @@
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'mi-tienda-app';
         let firestoreUser = null;
 
-        // --- LOKAL A BASE TI DATOS KEN KASAAD ---
+        // --- BASE DE DATOS LOCAL Y ESTADO ---
         let db = {
             users: [], 
             products: []
@@ -559,8 +550,7 @@
                     db = snapshot.data();
                     if (!db.users) db.users = [];
                     
-                    // FORZAR ACTUALIZACIÓN: Si detecta la lista vieja (menos de 31 productos),
-                    // sobreescribe Firestore con la nueva lista de 31 productos.
+                    // FORZAR ACTUALIZACIÓN: Si detecta la lista vieja, sobreescribe Firestore
                     if (!db.products || db.products.length < 31) {
                         db.products = [...MOCK_PRODUCTS];
                         saveDb();
@@ -666,7 +656,6 @@
             if(modalId === 'modal-register') document.getElementById('form-register').reset();
             if(modalId === 'modal-add-product') {
                 document.getElementById('form-add-product').reset();
-                // Limpiamos el carrito al abrir
                 currentCart = [];
                 renderCart();
             }
@@ -892,7 +881,6 @@
             if(product) {
                 currentCart.push({...product});
                 renderCart();
-                // Quitar el "required" del input si hay productos para que se pueda dar click en el botón + sin problemas
                 document.getElementById('prod-select').removeAttribute('required');
             }
         }
@@ -936,7 +924,7 @@
         function handleConfirmPurchase(e) {
             e.preventDefault();
             
-            if (!currentUser) return; // Paranoia check
+            if (!currentUser) return;
 
             if (currentCart.length === 0) {
                 showToast('Agrega al menos un producto a la lista usando el botón "+"', 'error');
@@ -954,12 +942,10 @@
             let totalAmount = 0;
             const addedCount = currentCart.length;
 
-            // Actualizar usuario en DB
             const userIndex = db.users.findIndex(u => u.id === currentUser.id);
             if(userIndex !== -1) {
-                // Registrar cada producto como una transacción individual en la lista
                 currentCart.forEach((item, index) => {
-                    const txTime = new Date(now.getTime() + index).toISOString(); // para evitar ids duplicados si son en el mismo milisegundo
+                    const txTime = new Date(now.getTime() + index).toISOString();
                     const tx = {
                         id: Date.now().toString() + '-' + index,
                         productId: item.id,
@@ -974,8 +960,6 @@
                 });
 
                 db.users[userIndex].balance += totalAmount;
-                
-                // Actualizar currentUser ref
                 currentUser = db.users[userIndex];
                 saveDb();
 
@@ -987,7 +971,6 @@
                 const targetPhone = "529611102942";
                 const dateStr = now.toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' });
                 
-                // Agrupar productos para que el ticket se vea más limpio (Ej: 3x Papas)
                 const groupedCart = {};
                 currentCart.forEach(item => {
                     if(groupedCart[item.id]) {
@@ -1003,7 +986,6 @@
                     productosTexto += `- ${item.count}x ${item.name} (${formatMoney(item.total)})\n`;
                 });
 
-                // Construir el mensaje en el orden solicitado
                 const msj = `🧾 *NUEVO FIADO REGISTRADO*
 👤 *Cuenta:* ${currentUser.name}
 
@@ -1012,7 +994,6 @@ ${productosTexto}
 💰 *Total del cargo:* ${formatMoney(totalAmount)}
 📅 *Fecha:* ${dateStr}`;
 
-                // Abrir enlace de WhatsApp
                 const waLink = `https://wa.me/${targetPhone}?text=${encodeURIComponent(msj)}`;
                 window.open(waLink, '_blank');
             }
@@ -1082,28 +1063,101 @@ ${productosTexto}
 
             sortedUsers.forEach(u => {
                 const card = document.createElement('div');
-                card.className = 'glass rounded-3xl p-5 shadow-sm flex justify-between items-center';
+                card.className = 'glass rounded-3xl p-5 shadow-sm flex flex-col gap-3';
                 
                 const initials = u.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
 
                 card.innerHTML = `
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-appleBlue/10 text-appleBlue flex items-center justify-center font-bold text-sm">
-                            ${initials}
-                        </div>
-                        <div>
-                            <h3 class="font-bold text-appleDark text-sm leading-tight">${u.name}</h3>
-                            <p class="text-xs text-appleLightText mt-0.5">Nacimiento: ${u.id.length === 8 ? u.id.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3') : u.id}</p>
-                            <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleDark'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-full bg-appleBlue/10 text-appleBlue flex items-center justify-center font-bold text-sm shrink-0">
+                                ${initials}
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-appleDark text-sm leading-tight">${u.name}</h3>
+                                <p class="text-xs text-appleLightText mt-0.5">Nacimiento: ${u.id.length === 8 ? u.id.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3') : u.id}</p>
+                                <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleDark'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
+                            </div>
                         </div>
                     </div>
-                    <button onclick="openAbonoModal('${u.id}')" class="px-4 py-2 bg-appleGreen/10 text-appleGreen text-sm font-bold rounded-full hover:bg-appleGreen/20 transition-colors" ${u.balance <= 0 ? 'disabled style="opacity:0.5"' : ''}>
-                        Abonar
-                    </button>
+                    <div class="flex gap-2 w-full mt-1">
+                        <button onclick="openHistoryModal('${u.id}')" class="flex-1 py-2 bg-black/5 text-appleDark text-xs font-bold rounded-full hover:bg-black/10 transition-colors">Historial</button>
+                        <button onclick="openAbonoModal('${u.id}')" class="flex-1 py-2 bg-appleGreen/10 text-appleGreen text-xs font-bold rounded-full hover:bg-appleGreen/20 transition-colors" ${u.balance <= 0 ? 'disabled style="opacity:0.5"' : ''}>Abonar</button>
+                    </div>
                 `;
                 container.appendChild(card);
             });
         }
+
+        // --- SISTEMA DE HISTORIAL Y BORRADO ---
+        function openHistoryModal(userId) {
+            const user = db.users.find(u => u.id === userId);
+            if (!user) return;
+            document.getElementById('history-client-name').innerText = user.name;
+            renderHistoryList(user);
+            openModal('modal-admin-history');
+        }
+
+        function renderHistoryList(user) {
+            const container = document.getElementById('admin-history-list');
+            container.innerHTML = '';
+            
+            if(user.transactions.length === 0) {
+                container.innerHTML = '<p class="text-center text-appleLightText text-sm py-4">No hay movimientos.</p>';
+                return;
+            }
+            
+            const sortedTx = [...user.transactions].reverse();
+            sortedTx.forEach(tx => {
+                const isAbono = tx.type === 'abono';
+                const date = new Date(tx.date).toLocaleDateString('es-MX', { month: 'short', day: 'numeric', hour: '2-digit', minute:'2-digit' });
+                
+                container.innerHTML += `
+                    <div class="glass rounded-xl p-3 flex justify-between items-center shadow-sm">
+                        <div class="flex items-center gap-2 overflow-hidden">
+                            <div class="text-xl shrink-0">${tx.icon}</div>
+                            <div class="truncate">
+                                <p class="font-semibold text-appleDark text-xs truncate">${tx.productName}</p>
+                                <p class="text-[10px] text-appleLightText">${date}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span class="font-bold text-xs ${isAbono ? 'text-appleGreen' : 'text-appleRed'}">${isAbono ? '-' : '+'}${formatMoney(tx.amount)}</span>
+                            <button onclick="deleteTransaction('${user.id}', '${tx.id}')" class="text-appleRed bg-appleRed/10 w-6 h-6 rounded-full flex items-center justify-center hover:bg-appleRed/20 transition-colors" title="Borrar y ajustar saldo">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function deleteTransaction(userId, txId) {
+            const userIndex = db.users.findIndex(u => u.id === userId);
+            if (userIndex === -1) return;
+            
+            const user = db.users[userIndex];
+            const txIndex = user.transactions.findIndex(t => t.id === txId);
+            if (txIndex === -1) return;
+            
+            const tx = user.transactions[txIndex];
+            
+            // Reajustar el saldo
+            if (tx.type === 'cargo') {
+                user.balance -= tx.amount; // Si borraste un producto fiado, debes menos
+            } else if (tx.type === 'abono') {
+                user.balance += tx.amount; // Si borraste un abono, debes más
+            }
+            
+            // Eliminar de la lista
+            user.transactions.splice(txIndex, 1);
+            saveDb();
+            
+            showToast('Movimiento eliminado y saldo ajustado');
+            renderHistoryList(user); // Refrescar el modal
+            renderAdminCobranza();   // Refrescar el saldo en el panel de fondo
+        }
+        // ------------------------------------
 
         function renderAdminProductos() {
             const container = document.getElementById('admin-products-list');
@@ -1225,7 +1279,6 @@ ${productosTexto}
         function handleDeleteProduct() {
             const id = document.getElementById('edit-prod-id').value;
             if (id) {
-                // Se removió confirm() nativo por restricciones de iframe
                 db.products = db.products.filter(p => p.id !== id);
                 saveDb();
                 populateProducts();
@@ -1236,7 +1289,6 @@ ${productosTexto}
         }
 
         function restoreDefaultProducts() {
-            // Reemplaza todos los productos actuales con la lista original de MOCK_PRODUCTS (31 productos)
             db.products = [...MOCK_PRODUCTS];
             saveDb();
             populateProducts();
@@ -1262,6 +1314,8 @@ ${productosTexto}
         window.handleSaveProduct = handleSaveProduct;
         window.handleDeleteProduct = handleDeleteProduct;
         window.restoreDefaultProducts = restoreDefaultProducts;
+        window.openHistoryModal = openHistoryModal;
+        window.deleteTransaction = deleteTransaction;
 
         // Arrancar
         window.onload = init;
