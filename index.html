@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Libreta de Fiados</title>
+    <title>libreta de Fiados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -251,9 +251,14 @@
             </div>
             
             <div id="admin-content-productos" class="flex-col gap-4 pb-10 hidden">
-                <button onclick="openProductModal()" class="w-full py-4 border-2 border-dashed border-appleBlue/30 text-appleBlue rounded-2xl font-semibold hover:bg-appleBlue/5 transition-colors mb-2">
-                    + Crear Nuevo Producto
-                </button>
+                <div class="flex gap-2 mb-2">
+                    <button onclick="openProductModal()" class="flex-[2] py-4 border-2 border-dashed border-appleBlue/30 text-appleBlue rounded-2xl font-semibold hover:bg-appleBlue/5 transition-colors">
+                        + Crear Nuevo
+                    </button>
+                    <button onclick="restoreDefaultProducts()" class="flex-1 py-4 border-2 border-dashed border-appleRed/30 text-appleRed rounded-2xl font-semibold hover:bg-appleRed/5 transition-colors text-xs" title="Borrar catálogo actual y poner lista por defecto">
+                        Restaurar Lista
+                    </button>
+                </div>
                 <div id="admin-products-list" class="flex flex-col gap-3"></div>
             </div>
         </div>
@@ -553,10 +558,14 @@
                 if (snapshot.exists()) {
                     db = snapshot.data();
                     if (!db.users) db.users = [];
-                    if (!db.products || db.products.length === 0) {
+                    
+                    // FORZAR ACTUALIZACIÓN: Si detecta la lista vieja (menos de 31 productos),
+                    // sobreescribe Firestore con la nueva lista de 31 productos.
+                    if (!db.products || db.products.length < 31) {
                         db.products = [...MOCK_PRODUCTS];
                         saveDb();
                     }
+                    
                     // Sincronizar copia local como respaldo
                     localStorage.setItem('libreta_fiados_db', JSON.stringify(db));
                 } else {
@@ -779,7 +788,7 @@
                     </div>
                     <div class="text-right">
                         <p class="text-xs text-appleLightText mb-1 uppercase tracking-wider">Deuda</p>
-                        <p class="font-bold text-appleRed text-lg">${formatMoney(u.balance)}</p>
+                        <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleDark'} text-lg">${formatMoney(u.balance)}</p>
                     </div>
                 `;
                 grid.appendChild(card);
@@ -807,7 +816,17 @@
 
             // Actualizar UI
             document.getElementById('dash-name').innerText = currentUser.name.split(' ')[0];
-            document.getElementById('dash-balance').innerText = formatMoney(currentUser.balance);
+            
+            // Actualizar balance y color
+            const dashBalanceEl = document.getElementById('dash-balance');
+            dashBalanceEl.innerText = formatMoney(currentUser.balance);
+            if (currentUser.balance > 0) {
+                dashBalanceEl.classList.remove('text-appleDark');
+                dashBalanceEl.classList.add('text-appleRed');
+            } else {
+                dashBalanceEl.classList.remove('text-appleRed');
+                dashBalanceEl.classList.add('text-appleDark');
+            }
 
             // Renderizar movimientos
             const listContainer = document.getElementById('transactions-list');
@@ -963,6 +982,39 @@
                 closeModal();
                 showToast(`${addedCount} producto(s) agregados exitosamente`);
                 renderDashboard();
+
+                // --- ENVIAR RECIBO POR WHATSAPP ---
+                const targetPhone = "529611102942";
+                const dateStr = now.toLocaleString('es-MX', { dateStyle: 'long', timeStyle: 'short' });
+                
+                // Agrupar productos para que el ticket se vea más limpio (Ej: 3x Papas)
+                const groupedCart = {};
+                currentCart.forEach(item => {
+                    if(groupedCart[item.id]) {
+                        groupedCart[item.id].count++;
+                        groupedCart[item.id].total += item.price;
+                    } else {
+                        groupedCart[item.id] = { ...item, count: 1, total: item.price };
+                    }
+                });
+
+                let productosTexto = '';
+                Object.values(groupedCart).forEach(item => {
+                    productosTexto += `- ${item.count}x ${item.name} (${formatMoney(item.total)})\n`;
+                });
+
+                // Construir el mensaje en el orden solicitado
+                const msj = `🧾 *NUEVO FIADO REGISTRADO*
+👤 *Cuenta:* ${currentUser.name}
+
+🛒 *Productos agregados:*
+${productosTexto}
+💰 *Total del cargo:* ${formatMoney(totalAmount)}
+📅 *Fecha:* ${dateStr}`;
+
+                // Abrir enlace de WhatsApp
+                const waLink = `https://wa.me/${targetPhone}?text=${encodeURIComponent(msj)}`;
+                window.open(waLink, '_blank');
             }
         }
 
@@ -1042,7 +1094,7 @@
                         <div>
                             <h3 class="font-bold text-appleDark text-sm leading-tight">${u.name}</h3>
                             <p class="text-xs text-appleLightText mt-0.5">Nacimiento: ${u.id.length === 8 ? u.id.replace(/(\d{2})(\d{2})(\d{4})/, '$1/$2/$3') : u.id}</p>
-                            <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleGreen'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
+                            <p class="font-bold ${u.balance > 0 ? 'text-appleRed' : 'text-appleDark'} text-sm mt-0.5">${formatMoney(u.balance)}</p>
                         </div>
                     </div>
                     <button onclick="openAbonoModal('${u.id}')" class="px-4 py-2 bg-appleGreen/10 text-appleGreen text-sm font-bold rounded-full hover:bg-appleGreen/20 transition-colors" ${u.balance <= 0 ? 'disabled style="opacity:0.5"' : ''}>
@@ -1183,6 +1235,15 @@
             }
         }
 
+        function restoreDefaultProducts() {
+            // Reemplaza todos los productos actuales con la lista original de MOCK_PRODUCTS (31 productos)
+            db.products = [...MOCK_PRODUCTS];
+            saveDb();
+            populateProducts();
+            renderAdminProductos();
+            showToast('Catálogo restaurado a los 31 productos', 'success');
+        }
+
         // Exportar funciones globales para HTML inline event handlers
         window.openModal = openModal;
         window.closeModal = closeModal;
@@ -1200,6 +1261,7 @@
         window.openProductModal = openProductModal;
         window.handleSaveProduct = handleSaveProduct;
         window.handleDeleteProduct = handleDeleteProduct;
+        window.restoreDefaultProducts = restoreDefaultProducts;
 
         // Arrancar
         window.onload = init;
